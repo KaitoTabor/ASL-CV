@@ -3,8 +3,10 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import base64
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 hands = mp.solutions.hands.Hands(static_image_mode=True)
 
 @app.route('/ping')
