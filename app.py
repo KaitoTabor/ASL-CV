@@ -4,6 +4,16 @@ import mediapipe as mp
 import numpy as np
 import base64
 from flask_cors import CORS
+import joblib
+
+
+
+model = joblib.load('asl_model.pkl')
+scaler = joblib.load('scaler.pkl')
+with open('class_names.txt', 'r') as f:
+    class_names = f.read().splitlines()
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -28,12 +38,23 @@ def predict():
     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    result = hands.process(img_rgb)
+    hands_result = hands.process(img_rgb)
 
-    if not result.multi_hand_landmarks:
+    if not hands_result.multi_hand_landmarks:
         return jsonify({'sign': 'none'})
+    
+    landmarks = []
+    for lm in hands_result.multi_hand_landmarks[0].landmark:
+        landmarks.extend([lm.x, lm.y, lm.z])
 
-    return jsonify({'sign': 'hello'})  # Stub for now
+
+   
+    hands_scaled = scaler.transform([landmarks])
+    pred_idx = model.predict(hands_scaled)
+    pred_class = class_names[pred_idx[0]]
+    print(pred_class)
+
+    return jsonify({'sign': pred_class})    
 
 import os
 
