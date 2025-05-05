@@ -4,4 +4,6 @@ mediapipe
 numpy
 flask-cors
 joblib
-sklearn
+scikit-learn
+pandas
+tqdm
