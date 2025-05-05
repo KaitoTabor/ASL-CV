@@ -34,7 +34,7 @@ while True:
         break
 
     frame = cv2.resize(frame,(640, 640))
-    frame = cv2.flip(frame, 1)  # Flip the frame horizontally
+     # Flip the frame horizontally
 
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(img_rgb)
@@ -42,6 +42,7 @@ while True:
     sign = 'none'
     if results.multi_hand_landmarks:
         hand = results.multi_hand_landmarks[0]
+        wrist = hand.landmark[0]
 
         # Draw hand on frame
         mp_drawing.draw_landmarks(
@@ -54,11 +55,13 @@ while True:
         landmarks = []
         for lm in hand.landmark:
             landmarks.extend([lm.x, lm.y, lm.z])
+            # landmarks.extend([lm.x-wrist.x, lm.y-wrist.y, lm.z-wrist.z])
 
         if len(landmarks) == 63:
-            normed = normalize_landmarks(landmarks)
-            print(f"Normalized landmarks: {normed}")
-            scaled = scaler.transform([normed])
+            # normed = normalize_landmarks(landmarks)
+            # print(f"Normalized landmarks: {normed}")
+            # scaled = scaler.transform([normed])
+            scaled = scaler.transform([landmarks])
             probs = model.predict_proba(scaled)
             conf = np.max(probs)
             if conf >= 0.6:

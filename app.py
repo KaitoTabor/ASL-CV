@@ -5,10 +5,10 @@ import numpy as np
 import base64
 from flask_cors import CORS
 import joblib
+        
 
 
-
-model = joblib.load('asl_model.pkl')
+model = joblib.load('asl_model_working.pkl')
 scaler = joblib.load('scaler.pkl')
 with open('class_names.txt', 'r') as f:
     class_names = f.read().splitlines()

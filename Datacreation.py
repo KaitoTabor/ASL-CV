@@ -7,7 +7,7 @@ output_dir = os.path.join("captured_images", label)
 os.makedirs(output_dir, exist_ok=True)
 
 cap = cv2.VideoCapture(0)
-count = 0
+count = 2000
 
 print("Press SPACE to capture an image. Press ESC to exit.")
 
