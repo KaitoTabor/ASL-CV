@@ -17,7 +17,7 @@ with open('class_names.txt', 'r') as f:
 
 app = Flask(__name__)
 CORS(app)
-hands = mp.solutions.hands.Hands(static_image_mode=True)
+hands = mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=2)
 
 @app.route('/ping')
 def ping():
@@ -27,11 +27,22 @@ def ping():
 def ping2():
     return 'pong', 200
 
+
+def is_hand_open(landmarks):
+    return (
+        landmarks[8].y < landmarks[6].y and
+        landmarks[12].y < landmarks[10].y and
+        landmarks[16].y < landmarks[14].y and
+        landmarks[20].y < landmarks[18].y
+    )
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json.get('image')
     if not data:
         return jsonify({'error': 'No image provided'}), 400
+
+
 
     image_bytes = base64.b64decode(data)
     np_arr = np.frombuffer(image_bytes, np.uint8)
@@ -40,11 +51,27 @@ def predict():
 
     hands_result = hands.process(img_rgb)
 
-    if not hands_result.multi_hand_landmarks:
+    lefthand = None
+    righthand = None
+
+    if(hands_result.multi_hand_landmarks is None):
+        return jsonify({'sign': 'none'})
+
+
+    for index, hand_landmarks in enumerate(hands_result.multi_hand_landmarks):
+        handedness = hands_result.multi_handedness[index].classification[0].label
+
+        #webcam flip
+        if handedness == 'Right':
+            lefthand = hand_landmarks
+        elif handedness == 'Left':
+            righthand = hand_landmarks
+            
+    if not righthand:
         return jsonify({'sign': 'none'})
     
     landmarks = []
-    for lm in hands_result.multi_hand_landmarks[0].landmark:
+    for lm in righthand.landmark:
         landmarks.extend([lm.x, lm.y, lm.z])
 
 
@@ -53,8 +80,12 @@ def predict():
     pred_idx = model.predict(hands_scaled)
     pred_class = class_names[pred_idx[0]]
     print(pred_class)
+    if lefthand:
+        open = is_hand_open(lefthand.landmark)
+    else:
+        open = False
 
-    return jsonify({'sign': pred_class})    
+    return jsonify({'sign': pred_class,'open': open})    
 
 import os
 
