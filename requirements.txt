@@ -4,3 +4,4 @@ mediapipe
 numpy
 flask-cors
 joblib
+sklearn
