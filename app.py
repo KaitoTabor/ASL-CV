@@ -8,7 +8,7 @@ import joblib
         
 
 
-model = joblib.load('asl_model_working.pkl')
+model = joblib.load('asl_model.pkl')
 scaler = joblib.load('scaler.pkl')
 with open('class_names.txt', 'r') as f:
     class_names = f.read().splitlines()
